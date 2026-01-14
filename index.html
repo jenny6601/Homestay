@@ -1,0 +1,281 @@
+YPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>自建民宿協作管理儀表板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        .tab-active { border-bottom: 3px solid #0f172a; color: #0f172a; font-weight: 700; }
+        .status-done { background-color: #dcfce7; color: #166534; }
+        .status-pending { background-color: #fef9c3; color: #854d0e; }
+        .status-todo { background-color: #f1f5f9; color: #475569; }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e2e8f0;
+        }
+        /* 隱藏捲動軸 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-10">
+
+    <!-- Header -->
+    <header class="bg-[#1e293b] text-white py-6 px-5 shadow-lg md:py-8 md:px-6">
+        <div class="max-w-6xl mx-auto">
+            <h1 class="text-xl md:text-3xl font-bold">自建民宿：協作管理系統</h1>
+            <p class="text-slate-400 mt-1 text-xs md:text-base">全時程 24 個月進度與三方決策追蹤</p>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 overflow-x-auto hide-scrollbar">
+        <div class="max-w-6xl mx-auto flex whitespace-nowrap px-2">
+            <button onclick="switchTab('table')" id="tab-table" class="flex-1 px-4 py-4 text-sm text-slate-500 hover:text-slate-800 transition-all tab-active">
+                管理表格
+            </button>
+            <button onclick="switchTab('timeline')" id="tab-timeline" class="flex-1 px-4 py-4 text-sm text-slate-500 hover:text-slate-800 transition-all">
+                24月進度
+            </button>
+            <button onclick="switchTab('checklist')" id="tab-checklist" class="flex-1 px-4 py-4 text-sm text-slate-500 hover:text-slate-800 transition-all">
+                查核清單
+            </button>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-6">
+        
+        <!-- Table Section (Responsive: Card on Mobile, Table on Desktop) -->
+        <section id="content-table" class="block">
+            <!-- Desktop Table -->
+            <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">階段</th>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">項目名稱</th>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">負責</th>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">決策重點</th>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">協作關鍵點</th>
+                            <th class="px-4 py-4 font-bold text-slate-700 text-sm">狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body-desktop" class="divide-y divide-slate-100 text-sm">
+                        <!-- JS injected -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div id="table-body-mobile" class="md:hidden space-y-4">
+                <!-- JS injected -->
+            </div>
+            
+            <p class="mt-6 text-slate-400 text-[10px] md:text-xs text-center">提示：點擊狀態標籤可快速切換進度</p>
+        </section>
+
+        <!-- Timeline Section -->
+        <section id="content-timeline" class="hidden">
+            <div class="space-y-8 md:space-y-12 max-w-2xl mx-auto py-2">
+                <!-- Timeline items will be injected here -->
+            </div>
+        </section>
+
+        <!-- Checklist Section -->
+        <section id="content-checklist" class="hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-md md:text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-1.5 h-5 bg-blue-500 rounded mr-3"></span>水電管線地雷區
+                    </h3>
+                    <ul class="space-y-2" id="check-list-1"></ul>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-md md:text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-1.5 h-5 bg-amber-500 rounded mr-3"></span>民宿特有法規
+                    </h3>
+                    <ul class="space-y-2" id="check-list-2"></ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const tableData = [
+            { phase: "1. 規劃", task: "建築配置與動線", who: "建築師", decision: "方位、房型、坪數", note: "設計師需參與確認採光隔間", status: "done" },
+            { phase: "2. 執照", task: "建照申請掛件", who: "建築師", decision: "外觀顏色、開窗位置", note: "影響室內家具擺放", status: "pending" },
+            { phase: "3. 室內", task: "弱電與插座規劃", who: "設計師", decision: "3C使用習慣、燈控", note: "需確認結構牆位置", status: "todo" },
+            { phase: "4. 設備", task: "全熱交換/冷氣系統", who: "設計師", decision: "品牌偏好、預算", note: "確認樑下高度，避免壓迫", status: "todo" },
+            { phase: "5. 建築", task: "廚房與衛浴管線", who: "建築師", decision: "廚具形式 (中島/一字)", note: "灌漿前需完成洩水坡度定位", status: "todo" },
+            { phase: "6. 外觀", task: "景觀與外牆材質", who: "建築師", decision: "石材、塗料、招牌", note: "協調外牆亮化效果", status: "todo" },
+            { phase: "7. 執照", task: "使用執照申請", who: "建築師", decision: "民宿合法化查驗", note: "不影響消防與使照核可內容", status: "todo" },
+            { phase: "8. 軟裝", task: "家具與藝術品進場", who: "設計師", decision: "預算與風格定調", note: "確保工地清潔，避免汙染", status: "todo" }
+        ];
+
+        const timelineData = [
+            { 
+                title: "第一階段：設計與執照", 
+                months: "M1 - M6", 
+                items: ["建築師草圖與環境評估", "設計師介入平面配置協商", "建築師申請建照"],
+                color: "blue" 
+            },
+            { 
+                title: "第二階段：發包與施工", 
+                months: "M7 - M16", 
+                items: ["營造整地與結構灌漿", "確認管路預留定位", "外牆工程與使照申請"],
+                color: "indigo" 
+            },
+            { 
+                title: "第三階段：裝修與景觀", 
+                months: "M17 - M22", 
+                items: ["木作油漆與系統櫃安裝", "景觀植栽與招牌安裝", "房務備品與POS系統進場"],
+                color: "emerald" 
+            },
+            { 
+                title: "第四階段：合法化營運", 
+                months: "M23 - M24", 
+                items: ["民宿登記證申請與消檢", "官網上線與專業攝影", "試營運 (Soft Opening)"],
+                color: "amber" 
+            }
+        ];
+
+        const checklists = {
+            c1: ["冷氣室外機平台位置", "全棟軟水/過濾系統", "熱泵/太陽能配線", "戶外防水插座"],
+            c2: ["無障礙空間新標準", "消防排煙窗限制", "疏散路線指示燈", "客房避難圖佈置"]
+        };
+
+        function switchTab(tab) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`content-${tab}`).classList.remove('hidden');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById(`tab-${tab}`).classList.add('tab-active');
+            window.scrollTo(0, 0);
+        }
+
+        function renderTable() {
+            const desktopBody = document.getElementById('table-body-desktop');
+            const mobileBody = document.getElementById('table-body-mobile');
+
+            // Desktop Render
+            desktopBody.innerHTML = tableData.map((row, idx) => `
+                <tr class="hover:bg-slate-50/80 transition-colors text-xs lg:text-sm">
+                    <td class="px-4 py-4 text-slate-400 font-medium">${row.phase}</td>
+                    <td class="px-4 py-4 font-bold text-slate-800">${row.task}</td>
+                    <td class="px-4 py-4">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold ${row.who === '建築師' ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600'}">${row.who}</span>
+                    </td>
+                    <td class="px-4 py-4 text-slate-600">${row.decision}</td>
+                    <td class="px-4 py-4 text-slate-400 text-xs italic leading-relaxed">${row.note}</td>
+                    <td class="px-4 py-4">
+                        <button onclick="toggleStatus(${idx})" class="whitespace-nowrap px-3 py-1.5 rounded-full text-[11px] font-bold ${getStatusClass(row.status)}">
+                            ${getStatusLabel(row.status)}
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Mobile Render
+            mobileBody.innerHTML = tableData.map((row, idx) => `
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${row.phase}</span>
+                            <h3 class="text-base font-bold text-slate-800 mt-0.5">${row.task}</h3>
+                        </div>
+                        <button onclick="toggleStatus(${idx})" class="px-3 py-1 rounded-full text-[10px] font-bold ${getStatusClass(row.status)}">
+                            ${getStatusLabel(row.status)}
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-slate-50">
+                        <div>
+                            <p class="text-[10px] text-slate-400 mb-1 font-bold">負責方</p>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${row.who === '建築師' ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600'}">${row.who}</span>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 mb-1 font-bold">決策重點</p>
+                            <p class="text-xs text-slate-700 font-medium">${row.decision}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-slate-50 rounded-xl">
+                        <p class="text-[10px] text-slate-400 mb-1 font-bold">協作提醒</p>
+                        <p class="text-xs text-slate-500 italic">${row.note}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(s) {
+            if (s === 'done') return 'status-done';
+            if (s === 'pending') return 'status-pending';
+            return 'status-todo';
+        }
+
+        function getStatusLabel(s) {
+            if (s === 'done') return '已完成';
+            if (s === 'pending') return '進行中';
+            return '待辦';
+        }
+
+        function toggleStatus(idx) {
+            const states = ['todo', 'pending', 'done'];
+            let currentIdx = states.indexOf(tableData[idx].status);
+            tableData[idx].status = states[(currentIdx + 1) % 3];
+            renderTable();
+        }
+
+        function renderTimeline() {
+            const container = document.querySelector('#content-timeline .space-y-8');
+            container.innerHTML = timelineData.map(t => `
+                <div class="relative pl-10 timeline-line">
+                    <div class="absolute left-0 top-0 w-9 h-9 rounded-full bg-white flex items-center justify-center z-10 border-2 border-slate-200 shadow-sm">
+                        <div class="w-2.5 h-2.5 rounded-full bg-${t.color}-500"></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex flex-col mb-4">
+                            <span class="text-[10px] font-bold text-${t.color}-600 bg-${t.color}-50 px-2 py-0.5 rounded-md w-max mb-1">${t.months}</span>
+                            <h3 class="text-lg font-bold text-slate-800">${t.title}</h3>
+                        </div>
+                        <ul class="space-y-3">
+                            ${t.items.map(item => `
+                                <li class="flex items-start text-slate-600 text-xs leading-relaxed">
+                                    <svg class="w-3.5 h-3.5 mr-2 mt-0.5 text-slate-300 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+                                    ${item}
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderChecklist() {
+            const c1 = document.getElementById('check-list-1');
+            const c2 = document.getElementById('check-list-2');
+            
+            const itemTemplate = (item, color) => `
+                <label class="flex items-center space-x-3 p-4 bg-slate-50/50 rounded-xl transition-all border border-transparent active:scale-95 cursor-pointer">
+                    <input type="checkbox" class="w-5 h-5 rounded-lg border-slate-300 text-${color}-600 focus:ring-${color}-500 shadow-sm">
+                    <span class="text-slate-600 text-sm font-medium">${item}</span>
+                </label>
+            `;
+
+            c1.innerHTML = checklists.c1.map(item => itemTemplate(item, 'blue')).join('');
+            c2.innerHTML = checklists.c2.map(item => itemTemplate(item, 'amber')).join('');
+        }
+
+        // Initialize
+        renderTable();
+        renderTimeline();
+        renderChecklist();
+    </script>
+</body>
+</html>
