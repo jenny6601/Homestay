@@ -1,4 +1,4 @@
-YPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -28,7 +28,7 @@ YPE html>
 </head>
 <body class="bg-slate-50 min-h-screen pb-10">
 
-    <!-- Header -->
+    <!-- 頁首 -->
     <header class="bg-[#1e293b] text-white py-6 px-5 shadow-lg md:py-8 md:px-6">
         <div class="max-w-6xl mx-auto">
             <h1 class="text-xl md:text-3xl font-bold">自建民宿：協作管理系統</h1>
@@ -36,7 +36,7 @@ YPE html>
         </div>
     </header>
 
-    <!-- Navigation Tabs -->
+    <!-- 導航標籤 -->
     <nav class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 overflow-x-auto hide-scrollbar">
         <div class="max-w-6xl mx-auto flex whitespace-nowrap px-2">
             <button onclick="switchTab('table')" id="tab-table" class="flex-1 px-4 py-4 text-sm text-slate-500 hover:text-slate-800 transition-all tab-active">
@@ -53,9 +53,9 @@ YPE html>
 
     <main class="max-w-6xl mx-auto p-4 md:p-6">
         
-        <!-- Table Section (Responsive: Card on Mobile, Table on Desktop) -->
+        <!-- 管理表格區段 -->
         <section id="content-table" class="block">
-            <!-- Desktop Table -->
+            <!-- 電腦版表格 -->
             <div class="hidden md:block bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <table class="w-full text-left border-collapse">
                     <thead class="bg-slate-50 border-b border-slate-200">
@@ -69,38 +69,47 @@ YPE html>
                         </tr>
                     </thead>
                     <tbody id="table-body-desktop" class="divide-y divide-slate-100 text-sm">
-                        <!-- JS injected -->
+                        <!-- JS 注入內容 -->
                     </tbody>
                 </table>
             </div>
 
-            <!-- Mobile Cards -->
+            <!-- 手機版卡片 -->
             <div id="table-body-mobile" class="md:hidden space-y-4">
-                <!-- JS injected -->
+                <!-- JS 注入內容 -->
             </div>
             
             <p class="mt-6 text-slate-400 text-[10px] md:text-xs text-center">提示：點擊狀態標籤可快速切換進度</p>
         </section>
 
-        <!-- Timeline Section -->
+        <!-- 時間線區段 -->
         <section id="content-timeline" class="hidden">
             <div class="space-y-8 md:space-y-12 max-w-2xl mx-auto py-2">
-                <!-- Timeline items will be injected here -->
+                <!-- 時間線項目注入 -->
             </div>
         </section>
 
-        <!-- Checklist Section -->
+        <!-- 查核清單區段 -->
         <section id="content-checklist" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <!-- 類別：空間與建築細節 -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <h3 class="text-md md:text-lg font-bold text-slate-800 mb-4 flex items-center">
-                        <span class="w-1.5 h-5 bg-blue-500 rounded mr-3"></span>水電管線地雷區
+                        <span class="w-1.5 h-5 bg-rose-500 rounded mr-3"></span>建築空間細節
+                    </h3>
+                    <ul class="space-y-2" id="check-list-3"></ul>
+                </div>
+                <!-- 類別：水電設備 -->
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+                    <h3 class="text-md md:text-lg font-bold text-slate-800 mb-4 flex items-center">
+                        <span class="w-1.5 h-5 bg-blue-500 rounded mr-3"></span>水電設備配置
                     </h3>
                     <ul class="space-y-2" id="check-list-1"></ul>
                 </div>
+                <!-- 類別：法規與消防 -->
                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
                     <h3 class="text-md md:text-lg font-bold text-slate-800 mb-4 flex items-center">
-                        <span class="w-1.5 h-5 bg-amber-500 rounded mr-3"></span>民宿特有法規
+                        <span class="w-1.5 h-5 bg-amber-500 rounded mr-3"></span>營運與法規
                     </h3>
                     <ul class="space-y-2" id="check-list-2"></ul>
                 </div>
@@ -110,15 +119,16 @@ YPE html>
     </main>
 
     <script>
+        // 表格數據：狀態皆為 todo，建照申請在第 6 項
         const tableData = [
-            { phase: "1. 規劃", task: "建築配置與動線", who: "建築師", decision: "方位、房型、坪數", note: "設計師需參與確認採光隔間", status: "done" },
-            { phase: "2. 執照", task: "建照申請掛件", who: "建築師", decision: "外觀顏色、開窗位置", note: "影響室內家具擺放", status: "pending" },
-            { phase: "3. 室內", task: "弱電與插座規劃", who: "設計師", decision: "3C使用習慣、燈控", note: "需確認結構牆位置", status: "todo" },
-            { phase: "4. 設備", task: "全熱交換/冷氣系統", who: "設計師", decision: "品牌偏好、預算", note: "確認樑下高度，避免壓迫", status: "todo" },
-            { phase: "5. 建築", task: "廚房與衛浴管線", who: "建築師", decision: "廚具形式 (中島/一字)", note: "灌漿前需完成洩水坡度定位", status: "todo" },
-            { phase: "6. 外觀", task: "景觀與外牆材質", who: "建築師", decision: "石材、塗料、招牌", note: "協調外牆亮化效果", status: "todo" },
-            { phase: "7. 執照", task: "使用執照申請", who: "建築師", decision: "民宿合法化查驗", note: "不影響消防與使照核可內容", status: "todo" },
-            { phase: "8. 軟裝", task: "家具與藝術品進場", who: "設計師", decision: "預算與風格定調", note: "確保工地清潔，避免汙染", status: "todo" }
+            { phase: "1. 規劃", task: "建築配置與動線", who: "建築師", decision: "方位、房型、坪數", note: "設計師需參與確認採光隔間", status: "todo" },
+            { phase: "2. 室內", task: "弱電與插座規劃", who: "設計師", decision: "3C使用習慣、燈控", note: "需確認結構牆位置", status: "todo" },
+            { phase: "3. 設備", task: "空調與通風系統", who: "設計師", decision: "冷氣冷房能力、預算", note: "確認樑下高度與排水孔位", status: "todo" },
+            { phase: "4. 建築", task: "廚房與衛浴管線", who: "建築師", decision: "廚具形式 (中島/一字)", note: "灌漿前需完成洩水坡度定位", status: "todo" },
+            { phase: "5. 外觀", task: "景觀與外牆材質", who: "建築師", decision: "石材、塗料、招牌", note: "協調外牆亮化與夜間氣氛", status: "todo" },
+            { phase: "6. 執照", task: "建照申請掛件", who: "建築師", decision: "外觀顏色、開窗位置", note: "影響室內家具擺放與風向", status: "todo" },
+            { phase: "7. 執照", task: "使用執照申請", who: "建築師", decision: "民宿合法化查驗", note: "確保消防與原建照一致", status: "todo" },
+            { phase: "8. 軟裝", task: "家具與藝術品進場", who: "設計師", decision: "風格定調、燈光演色性", note: "家具尺寸需避開插座位置", status: "todo" }
         ];
 
         const timelineData = [
@@ -149,8 +159,9 @@ YPE html>
         ];
 
         const checklists = {
-            c1: ["冷氣室外機平台位置", "全棟軟水/過濾系統", "熱泵/太陽能配線", "戶外防水插座"],
-            c2: ["無障礙空間新標準", "消防排煙窗限制", "疏散路線指示燈", "客房避難圖佈置"]
+            c1: ["冷氣室外機平台位置", "全棟軟水/過濾系統預留", "瓦斯熱水器位置與強制排氣", "瓦斯桶存放空間與遮蔽設計", "戶外防水插座與洗滌區"],
+            c2: ["無障礙空間新標準 (2026)", "消防排煙窗位置與開關", "疏散路線指示燈與插座高度", "客房避難圖佈置位置", "布品收納空間與髒衣區"],
+            c3: ["客廳規模與景觀窗寬度", "餐廳桌數與早餐供餐動線", "廚房設備規格 (IH爐/瓦斯)", "總客房數與坪數確認", "各房型床數與備用床空間", "行李置放空間與掛衣細節"]
         };
 
         function switchTab(tab) {
@@ -165,7 +176,7 @@ YPE html>
             const desktopBody = document.getElementById('table-body-desktop');
             const mobileBody = document.getElementById('table-body-mobile');
 
-            // Desktop Render
+            // 電腦版渲染
             desktopBody.innerHTML = tableData.map((row, idx) => `
                 <tr class="hover:bg-slate-50/80 transition-colors text-xs lg:text-sm">
                     <td class="px-4 py-4 text-slate-400 font-medium">${row.phase}</td>
@@ -183,7 +194,7 @@ YPE html>
                 </tr>
             `).join('');
 
-            // Mobile Render
+            // 手機版渲染
             mobileBody.innerHTML = tableData.map((row, idx) => `
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                     <div class="flex justify-between items-start mb-3">
@@ -260,19 +271,21 @@ YPE html>
         function renderChecklist() {
             const c1 = document.getElementById('check-list-1');
             const c2 = document.getElementById('check-list-2');
+            const c3 = document.getElementById('check-list-3');
             
             const itemTemplate = (item, color) => `
-                <label class="flex items-center space-x-3 p-4 bg-slate-50/50 rounded-xl transition-all border border-transparent active:scale-95 cursor-pointer">
+                <label class="flex items-center space-x-3 p-3.5 bg-slate-50/50 rounded-xl transition-all border border-transparent active:scale-95 cursor-pointer">
                     <input type="checkbox" class="w-5 h-5 rounded-lg border-slate-300 text-${color}-600 focus:ring-${color}-500 shadow-sm">
-                    <span class="text-slate-600 text-sm font-medium">${item}</span>
+                    <span class="text-slate-600 text-[13px] font-medium leading-snug">${item}</span>
                 </label>
             `;
 
             c1.innerHTML = checklists.c1.map(item => itemTemplate(item, 'blue')).join('');
             c2.innerHTML = checklists.c2.map(item => itemTemplate(item, 'amber')).join('');
+            c3.innerHTML = checklists.c3.map(item => itemTemplate(item, 'rose')).join('');
         }
 
-        // Initialize
+        // 初始化渲染
         renderTable();
         renderTimeline();
         renderChecklist();
